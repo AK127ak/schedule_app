@@ -1,0 +1,29 @@
+# Виртуальное окружение
+venv/
+.venv/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Переменные окружения 
+.env
+.env.*
+!.env.example
+
+# IDE
+.vscode/
+.idea/
+
+# Системные файлы
+.DS_Store
+Thumbs.db
+
+# Логи
+*.log
+
+# База данных — если не хочешь выкладывать её на GitHub
+*.db
+*.sqlite
+*.sqlite3

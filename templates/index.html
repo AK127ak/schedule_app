@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Расписание</title>
+<link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+<header class="topbar">
+    <h1>Расписание занятий</h1>
+    <div class="week-switch">
+        <button class="week-btn active" data-week="1">1 неделя</button>
+        <button class="week-btn" data-week="2">2 неделя</button>
+    </div>
+    <nav class="nav-links">
+        <a href="/groups">Группы</a>
+        <a href="/teachers">Преподаватели</a>
+        <a href="/subjects">Дисциплины</a>
+        <a href="/classrooms">Кабинеты</a>
+    </nav>
+</header>
+
+<div class="layout">
+
+    <main class="schedule-area">
+        <div id="scheduleTable" class="schedule-table">
+            <p class="loading">Загрузка расписания…</p>
+        </div>
+    </main>
+
+    <aside class="teachers-panel">
+        <h2>Преподаватели</h2>
+        <div id="teachersList">
+            <p class="loading">Загрузка…</p>
+        </div>
+    </aside>
+
+</div>
+
+<div id="lessonModal" class="modal hidden">
+    <div class="modal-content">
+        <h3 id="modalTitle">Добавление занятия</h3>
+        <form id="lessonForm">
+            <input type="hidden" id="lessonId">
+            <input type="hidden" id="lessonDay">
+            <input type="hidden" id="lessonGroupId">
+
+            <div id="modalContext" class="modal-context"></div>
+
+            <label id="labelGroup">Группа
+                <select id="fieldGroup" required></select>
+            </label>
+            <label>Преподаватель
+                <select id="fieldTeacher" required></select>
+            </label>
+            <label>Дисциплина
+                <select id="fieldSubject" required></select>
+            </label>
+            <label id="labelWeek1">1 неделя (пара)
+                <select id="fieldWeek1">
+                    <option value="">—</option>
+                </select>
+            </label>
+            <label id="labelWeek2">2 неделя (пара)
+                <select id="fieldWeek2">
+                    <option value="">—</option>
+                </select>
+            </label>
+            <label>Кабинет
+                <select id="fieldClassroom">
+                    <option value="">—</option>
+                </select>
+            </label>
+            <label>Тип занятия
+                <select id="fieldType">
+                    <option>Лекция</option>
+                    <option>Практика</option>
+                    <option>Лабораторная</option>
+                </select>
+            </label>
+
+            <div id="conflictWarning" class="conflict-warning hidden"></div>
+
+            <div class="modal-actions">
+                <button type="button" id="deleteLessonBtn" class="btn-danger hidden">Удалить занятие</button>
+                <button type="button" id="cancelBtn" class="btn-secondary">Отмена</button>
+                <button type="submit" class="btn-primary">Сохранить</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="/static/js/api.js"></script>
+<script src="/static/js/schedule.js"></script>
+</body>
+</html>
