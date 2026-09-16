@@ -68,6 +68,11 @@ function renderLessonCard(lesson) {
         openEditModal(lesson);
     });
 
+    div.addEventListener("dragstart", (e) => {
+        e.dataTransfer.setData("text/plain", JSON.stringify({ type: "move", lessonId: lesson.id }));
+        e.dataTransfer.effectAllowed = "move";
+    });
+
     return div;
 }
 
@@ -85,7 +90,9 @@ function renderTable() {
     const thead = document.createElement("thead");
     const headRow = document.createElement("tr");
     headRow.innerHTML = `<th>День</th><th>Пара</th>` +
-        state.groups.map((g) => `<th>${g.name}</th>`).join("");
+        state.groups.map((g) =>
+            `<th>${g.name} <a href="/print/${g.id}" target="_blank" title="Печать расписания группы" class="print-link">🖨</a></th>`
+        ).join("");
     thead.appendChild(headRow);
     table.appendChild(thead);
 
@@ -115,20 +122,34 @@ function renderTable() {
                 td.dataset.day = day.id;
                 td.dataset.pair = pair;
 
+                const inner = document.createElement("div");
+                inner.className = "slot-inner";
+
                 const lesson = findLesson(group.id, day.id, pair);
                 if (lesson) {
-                    td.appendChild(renderLessonCard(lesson));
+                    inner.appendChild(renderLessonCard(lesson));
                 } else {
                     const btn = document.createElement("button");
                     btn.className = "add-slot-btn";
                     btn.type = "button";
                     btn.textContent = "+";
                     btn.addEventListener("click", () => openCreateModal(group.id, day.id, pair));
-                    td.appendChild(btn);
+                    inner.appendChild(btn);
                 }
+                td.appendChild(inner);
 
-                // Место под Drag & Drop (реализуется отдельным шагом)
-                td.addEventListener("dragover", (e) => e.preventDefault());
+                td.addEventListener("dragover", (e) => {
+                    e.preventDefault();
+                    td.classList.add("drag-over");
+                });
+                td.addEventListener("dragleave", () => {
+                    td.classList.remove("drag-over");
+                });
+                td.addEventListener("drop", (e) => {
+                    e.preventDefault();
+                    td.classList.remove("drag-over");
+                    handleDrop(e, group.id, day.id, pair);
+                });
 
                 tr.appendChild(td);
             });
@@ -172,7 +193,16 @@ function renderTeachersPanel() {
                 const chip = document.createElement("div");
                 chip.className = "subject-chip";
                 chip.textContent = s.name;
-                chip.title = "Перетаскивание появится на следующем шаге (Drag & Drop)";
+                chip.draggable = true;
+                chip.title = "Перетащи на нужную ячейку расписания";
+                chip.addEventListener("dragstart", (e) => {
+                    e.dataTransfer.setData("text/plain", JSON.stringify({
+                        type: "new",
+                        teacherId: teacher.id,
+                        subjectId: s.id,
+                    }));
+                    e.dataTransfer.effectAllowed = "copy";
+                });
                 subjectsDiv.appendChild(chip);
             });
         }
@@ -183,7 +213,58 @@ function renderTeachersPanel() {
     });
 }
 
-// ---------- Модальное окно занятия ----------
+// ---------- Обработка Drag & Drop ----------
+function handleDrop(e, targetGroupId, targetDay, targetPair) {
+    let payload;
+    try {
+        payload = JSON.parse(e.dataTransfer.getData("text/plain"));
+    } catch {
+        return;
+    }
+
+    if (payload.type === "new") {
+        // Перетащили дисциплину преподавателя из панели — открываем форму
+        // с уже выбранными преподавателем и дисциплиной, чтобы указать кабинет и тип.
+        openCreateModal(targetGroupId, targetDay, targetPair, {
+            teacherId: payload.teacherId,
+            subjectId: payload.subjectId,
+        });
+    } else if (payload.type === "move") {
+        moveLesson(payload.lessonId, targetGroupId, targetDay, targetPair, false);
+    }
+}
+
+async function moveLesson(lessonId, groupId, day, pair, force) {
+    const lesson = state.lessons.find((l) => l.id === lessonId);
+    if (!lesson) return;
+
+    // Меняем позицию только для активной недели, вторую неделю не трогаем
+    const payload = {
+        group_id: groupId,
+        day: day,
+        week1_lesson: state.currentWeek === 1 ? pair : lesson.week1_lesson,
+        week2_lesson: state.currentWeek === 2 ? pair : lesson.week2_lesson,
+    };
+    if (force) payload.force = true;
+
+    const result = await api.put(`/api/lessons/${lessonId}/move`, payload);
+
+    if (result.ok) {
+        await loadAll();
+        return;
+    }
+
+    if (result.status === 409 && result.data.conflicts) {
+        const messages = result.data.conflicts.map((c) => c.message).join("\n");
+        if (confirm(`⚠ Обнаружен конфликт:\n${messages}\n\nВсё равно переместить?`)) {
+            await moveLesson(lessonId, groupId, day, pair, true);
+        }
+    } else {
+        alert(result.data?.error || "Не удалось переместить занятие");
+    }
+}
+
+
 const modal = document.getElementById("lessonModal");
 const form = document.getElementById("lessonForm");
 const conflictBox = document.getElementById("conflictWarning");
@@ -191,6 +272,9 @@ const conflictBox = document.getElementById("conflictWarning");
 function populateSelects() {
     const groupSel = document.getElementById("fieldGroup");
     groupSel.innerHTML = state.groups.map((g) => `<option value="${g.id}">${g.name}</option>`).join("");
+
+    const daySel = document.getElementById("fieldDay");
+    daySel.innerHTML = DAYS.map((d) => `<option value="${d.id}">${d.name}</option>`).join("");
 
     const teacherSel = document.getElementById("fieldTeacher");
     teacherSel.innerHTML = state.teachers.map((t) => `<option value="${t.id}">${t.short_name} — ${t.name}</option>`).join("");
@@ -221,19 +305,27 @@ function dayName(dayId) {
     return d ? d.name : "";
 }
 
-function openCreateModal(groupId, day, pair) {
+function openCreateModal(groupId, day, pair, prefill) {
     populateSelects();
     document.getElementById("modalTitle").textContent = "Добавление занятия";
     document.getElementById("lessonId").value = "";
     document.getElementById("fieldGroup").value = groupId;
-    document.getElementById("lessonDay").value = day;
+    document.getElementById("fieldDay").value = day;
+
+    if (prefill && prefill.teacherId) {
+        document.getElementById("fieldTeacher").value = prefill.teacherId;
+        updateSubjectOptionsForTeacher();
+        if (prefill.subjectId) {
+            document.getElementById("fieldSubject").value = prefill.subjectId;
+        }
+    }
 
     const group = state.groups.find((g) => g.id === groupId);
 
     // Группа, день и пара уже определены кликом по ячейке — прячем эти поля
     // и показываем их текстом, чтобы не заставлять выбирать повторно.
     document.getElementById("labelGroup").classList.add("hidden");
-    document.getElementById("fieldGroup").disabled = false; // .value всё равно читается даже у disabled, но оставим enabled для надёжности
+    document.getElementById("labelDay").classList.add("hidden");
 
     if (state.currentWeek === 1) {
         document.getElementById("fieldWeek1").value = pair;
@@ -261,7 +353,7 @@ function openEditModal(lesson) {
     populateSelects();
     document.getElementById("modalTitle").textContent = "Редактирование занятия";
     document.getElementById("lessonId").value = lesson.id;
-    document.getElementById("lessonDay").value = lesson.day;
+    document.getElementById("fieldDay").value = lesson.day;
     document.getElementById("fieldGroup").value = lesson.group_id;
     document.getElementById("fieldTeacher").value = lesson.teacher_id;
     updateSubjectOptionsForTeacher();
@@ -271,8 +363,9 @@ function openEditModal(lesson) {
     document.getElementById("fieldClassroom").value = lesson.classroom_id ?? "";
     document.getElementById("fieldType").value = lesson.lesson_type || "Лекция";
 
-    // При редактировании показываем все поля — можно поменять и группу, и обе недели (п.12 ТЗ)
+    // При редактировании показываем все поля — можно поменять группу, день и обе недели (п.12 ТЗ)
     document.getElementById("labelGroup").classList.remove("hidden");
+    document.getElementById("labelDay").classList.remove("hidden");
     document.getElementById("labelWeek1").classList.remove("hidden");
     document.getElementById("labelWeek2").classList.remove("hidden");
     document.getElementById("modalContext").classList.add("hidden");
@@ -298,7 +391,7 @@ function buildPayload() {
         teacher_id: Number(document.getElementById("fieldTeacher").value),
         subject_id: Number(document.getElementById("fieldSubject").value),
         classroom_id: classroom ? Number(classroom) : null,
-        day: Number(document.getElementById("lessonDay").value),
+        day: Number(document.getElementById("fieldDay").value),
         week1_lesson: week1 ? Number(week1) : null,
         week2_lesson: week2 ? Number(week2) : null,
         lesson_type: document.getElementById("fieldType").value,

@@ -70,6 +70,16 @@ table.grid th {
     position: sticky;
     top: 0;
 }
+.print-link {
+    text-decoration: none;
+    margin-left: 4px;
+    opacity: 0.7;
+    font-size: 18px;
+    padding: 4px 6px;
+    display: inline-block;
+    border-radius: 4px;
+}
+.print-link:hover { opacity: 1; background: #e2e8f0; }
 td.day-cell {
     background: #f8fafc;
     font-weight: 600;
@@ -84,7 +94,14 @@ td.slot {
     min-height: var(--cell-min-height);
     cursor: pointer;
     transition: background 0.15s;
+    padding: 4px;
 }
+.slot-inner {
+    display: flex;
+    height: 100%;
+    min-height: calc(var(--cell-min-height) - 8px);
+}
+.slot-inner > * { flex: 1; width: 100%; }
 td.slot:hover { background: #eff6ff; }
 td.slot.drag-over { background: #dbeafe; outline: 2px dashed var(--accent); }
 
@@ -184,6 +201,35 @@ td.slot.drag-over { background: #dbeafe; outline: 2px dashed var(--accent); }
 }
 .conflict-warning.hidden { display: none; }
 .hidden { display: none !important; }
+
+/* ---------- Страницы справочников ---------- */
+.mgmt-area { padding: 16px 24px; max-width: 900px; margin: 0 auto; }
+.mgmt-toolbar { display: flex; justify-content: flex-end; margin-bottom: 12px; }
+.btn-add {
+    padding: 8px 18px; background: var(--accent); color: #fff; border: none;
+    border-radius: 6px; cursor: pointer; font-size: 14px;
+}
+table.mgmt-table { width: 100%; border-collapse: collapse; background: #fff; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+table.mgmt-table th, table.mgmt-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); font-size: 14px; text-align: left; }
+table.mgmt-table th { background: #f1f5f9; font-size: 13px; }
+table.mgmt-table tr:last-child td { border-bottom: none; }
+.actions-cell { white-space: nowrap; text-align: right; }
+.actions-cell button { margin-left: 6px; padding: 4px 10px; font-size: 12px; border-radius: 5px; border: 1px solid var(--border); background: #fff; cursor: pointer; }
+.actions-cell button:hover { background: #f1f5f9; }
+.actions-cell button.danger { color: var(--danger); border-color: #fecaca; }
+
+.color-dot-inline { display: inline-block; width: 14px; height: 14px; border-radius: 50%; vertical-align: middle; margin-right: 6px; }
+.chip-list { display: flex; flex-wrap: wrap; gap: 4px; }
+.chip-list .chip { background: #f1f5f9; border-radius: 4px; padding: 2px 8px; font-size: 12px; }
+
+.checkbox-list { max-height: 160px; overflow-y: auto; border: 1px solid var(--border); border-radius: 6px; padding: 8px; }
+.checkbox-list label { display: flex; align-items: center; gap: 6px; font-size: 13px; margin-bottom: 4px; color: var(--text); }
+.checkbox-list input[type="checkbox"] { width: auto; margin: 0; }
+
+input[type="text"], input[type="number"] {
+    width: 100%; padding: 6px 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; margin-top: 4px;
+}
+input[type="color"] { width: 60px; height: 32px; margin-top: 4px; border: 1px solid var(--border); border-radius: 6px; cursor: pointer; }
 
 /* ---------- Модальное окно: контекст (группа/день/пара уже выбраны кликом) ---------- */
 .modal-context {

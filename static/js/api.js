@@ -23,3 +23,20 @@ const api = {
         return res.ok;
     },
 };
+
+// ---------- Фильтры ввода: только цифры / только буквы ----------
+// Применяются к полям форм, чтобы нельзя было ввести лишние символы.
+function restrictToDigits(el) {
+    if (!el) return;
+    el.addEventListener("input", () => {
+        el.value = el.value.replace(/[^0-9]/g, "");
+    });
+}
+
+function restrictToLetters(el) {
+    if (!el) return;
+    el.addEventListener("input", () => {
+        // Буквы (рус/лат), пробелы и дефис — для составных названий вроде «Информационные системы»
+        el.value = el.value.replace(/[^a-zA-Zа-яА-ЯёЁ\s-]/g, "");
+    });
+}

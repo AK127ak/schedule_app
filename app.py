@@ -29,6 +29,26 @@ def create_app():
     def index():
         return render_template("index.html")
 
+    @app.route("/print/<int:group_id>")
+    def print_group(group_id):
+        return render_template("print.html", group_id=group_id)
+
+    @app.route("/groups")
+    def groups_page():
+        return render_template("groups.html", page_title="Группы")
+
+    @app.route("/teachers")
+    def teachers_page():
+        return render_template("teachers.html", page_title="Преподаватели")
+
+    @app.route("/subjects")
+    def subjects_page():
+        return render_template("subjects.html", page_title="Дисциплины")
+
+    @app.route("/classrooms")
+    def classrooms_page():
+        return render_template("classrooms.html", page_title="Кабинеты")
+
     return app
 
 
