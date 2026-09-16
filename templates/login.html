@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Вход</title>
+<link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+<div class="auth-wrapper">
+    <div class="auth-card">
+        <h2>Вход в систему</h2>
+        {% if error %}<div class="auth-error">{{ error }}</div>{% endif %}
+        <form method="POST">
+            <label>Логин
+                <input type="text" name="username" required autofocus>
+            </label>
+            <label>Пароль
+                <input type="password" name="password" required>
+            </label>
+            <button type="submit">Войти</button>
+        </form>
+        <div class="switch-link">Нет аккаунта? <a href="/register">Зарегистрироваться</a></div>
+    </div>
+</div>
+</body>
+</html>

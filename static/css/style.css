@@ -231,6 +231,36 @@ input[type="text"], input[type="number"] {
 }
 input[type="color"] { width: 60px; height: 32px; margin-top: 4px; border: 1px solid var(--border); border-radius: 6px; cursor: pointer; }
 
+/* ---------- Вход / регистрация ---------- */
+.auth-wrapper {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.auth-card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 28px 32px;
+    width: 320px;
+}
+.auth-card h2 { margin-top: 0; font-size: 20px; text-align: center; }
+.auth-card label { display: block; margin-bottom: 12px; font-size: 13px; color: var(--text-muted); }
+.auth-card input[type="text"], .auth-card input[type="password"] {
+    width: 100%; padding: 8px 10px; margin-top: 4px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;
+}
+.auth-card button {
+    width: 100%; padding: 10px; background: var(--accent); color: #fff; border: none;
+    border-radius: 6px; cursor: pointer; font-size: 14px; margin-top: 8px;
+}
+.auth-card .switch-link { text-align: center; margin-top: 14px; font-size: 13px; }
+.auth-card .switch-link a { color: var(--accent); text-decoration: none; }
+.auth-error {
+    background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c;
+    padding: 8px 10px; border-radius: 6px; font-size: 13px; margin-bottom: 12px;
+}
+
 /* ---------- Модальное окно: контекст (группа/день/пара уже выбраны кликом) ---------- */
 .modal-context {
     background: #f1f5f9;
