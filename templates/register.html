@@ -1,12 +1,6 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Регистрация</title>
-<link rel="stylesheet" href="/static/css/style.css">
-</head>
-<body>
+{% extends "base.html" %}
+{% block title %}Регистрация{% endblock %}
+{% block content %}
 <div class="auth-wrapper">
     <div class="auth-card">
         <h2>Регистрация</h2>
@@ -26,5 +20,4 @@
         <div class="switch-link">Уже есть аккаунт? <a href="/login">Войти</a></div>
     </div>
 </div>
-</body>
-</html>
+{% endblock %}
